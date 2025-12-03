@@ -16,19 +16,21 @@ import java.util.List;
 import static me.rejomy.buildtrain.util.ColorUtil.toColor;
 
 public class SettingInventory extends InventoryBuilder {
+
     private final static SettingInventoryFile SETTING = new SettingInventoryFile();
-    public Material CURRENT_BLOCK;
-    private PlayerData data;
+
+    private final PlayerData data;
+    public Material CURRENT_BLOCK = Material.STONE;
+
     public SettingInventory(PlayerData data) {
         this.data = data;
-        CURRENT_BLOCK = Material.STONE;
         create((String) SETTING.VALUES.get("name"), 54);
         fill();
     }
 
     @Override
     public void fill() {
-        for(String path : SETTING.getYaml().getConfigurationSection("items").getKeys(false)) {
+        for (String path : SETTING.getYaml().getConfigurationSection("items").getKeys(false)) {
             setItemFromConfig("items." + path);
         }
     }
@@ -40,12 +42,17 @@ public class SettingInventory extends InventoryBuilder {
 
     private void setItemFromConfig(String path) {
         Material material;
+        String materialName = (String) SETTING.VALUES.get(path + ".type");
 
-        if(SETTING.VALUES.get(path + ".type") != null) {
-            material = Material.valueOf((String) SETTING.VALUES.get(path + ".type"));
+        if (materialName != null) {
+            material = Material.valueOf(materialName);
         } else {
             material = CURRENT_BLOCK;
         }
+
+        if (material == null)
+            throw new NullPointerException(String.format("Material %s on path %s is incorrect or not found",
+                    materialName, path));
 
         ItemBuilder builder = new ItemBuilder(material);
 
